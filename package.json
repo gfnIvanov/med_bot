@@ -1,0 +1,25 @@
+{
+  "name": "nodetlgbot",
+  "version": "1.0.0",
+  "description": "Бот для проектов БЦ Медицина",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": [
+    "node",
+    "bot",
+    "med",
+    "tlg"
+  ],
+  "author": "gfn.ivanov",
+  "license": "ISC",
+  "dependencies": {
+    "moment": "^2.29.2",
+    "node-telegram-bot-api": "^0.56.0",
+    "nodemon": "^2.0.15",
+    "sqlite3": "^5.0.2",
+    "xlsx": "^0.18.5"
+  }
+}

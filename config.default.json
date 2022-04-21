@@ -1,0 +1,14 @@
+{
+    "token": "",
+    "db_path": "",
+    "mainMenu": [
+        {
+            "text": "Логировать время",
+            "callback": "log_time"
+        },
+        {
+            "text": "Отчет (лог)",
+            "callback": "report_log"
+        }
+    ]
+}
