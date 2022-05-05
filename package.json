@@ -2,7 +2,8 @@
   "name": "nodetlgbot",
   "version": "1.0.0",
   "description": "Бот для проектов БЦ Медицина",
-  "main": "index.js",
+  "main": "./src/index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
@@ -21,5 +22,9 @@
     "nodemon": "^2.0.15",
     "sqlite3": "^5.0.2",
     "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.14.0",
+    "eslint-config-airbnb": "^19.0.4"
   }
 }
