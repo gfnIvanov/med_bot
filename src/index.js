@@ -350,8 +350,12 @@ export default (() => {
                 const report = new LogTimeReport(result).getFile();
                 if (report.status) {
                   await bot.sendDocument(msg.chat.id, report.file);
+                  process.setState('ready');
+                  process.setSubState('ready');
                 } else {
                   await bot.sendMessage(msg.chat.id, `Ошибка при получении файла отчета: ${report.error}`);
+                  process.setState('ready');
+                  process.setSubState('ready');
                 }
               } else {
                 await bot.sendMessage(msg.chat.id, `Ошибка при формировании отчета: ${error}`);
@@ -380,6 +384,8 @@ export default (() => {
         const report = new SupervisorReport(results).getFile();
         if (report.status) {
           await bot.sendDocument(msg.message.chat.id, report.file);
+          process.setState('ready');
+          process.setSubState('ready');
         } else {
           await bot.sendMessage(msg.message.chat.id, `Ошибка при получении файла отчета: ${report.error}`);
           process.setState('ready');
