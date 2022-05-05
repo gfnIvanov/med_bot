@@ -382,6 +382,8 @@ export default (() => {
           await bot.sendDocument(msg.message.chat.id, report.file);
         } else {
           await bot.sendMessage(msg.message.chat.id, `Ошибка при получении файла отчета: ${report.error}`);
+          process.setState('ready');
+          process.setSubState('ready');
         }
       }
     });
