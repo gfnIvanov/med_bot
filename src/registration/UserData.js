@@ -1,6 +1,7 @@
 export default class UserData {
   setIdent(ident) {
     this.ident = ident;
+    this.projects = [];
   }
 
   setName(name) {
