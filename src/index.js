@@ -37,8 +37,7 @@ export default (() => {
         if (status) {
           if (result.queryResult > 0) {
             await bot.sendMessage(msg.chat.id, `Привет, ${msg.from.first_name}! Бот уже все о тебе знает, эта команда тебе больше не нужна`);
-            process.setState('ready');
-            process.setSubState('ready');
+            process.ready();
           } else {
             process.setState('registration');
             process.setSubState('ready');
@@ -50,8 +49,7 @@ export default (() => {
           }
         } else {
           await bot.sendMessage(msg.message.chat.id, `Ошибка при проверке пользователя: ${error}`);
-          process.setState('ready');
-          process.setSubState('ready');
+          process.ready();
         }
       });
     }
@@ -63,8 +61,7 @@ export default (() => {
       db.checkUserExist(msg.from.username).then(async ({ status, result, error }) => {
         if (status) {
           if (result.queryResult > 0) {
-            process.setState('ready');
-            process.setSubState('ready');
+            process.ready();
             const main_menu = config.mainMenu.slice(0);
             if (config.supervisors.find((user) => user === msg.from.username)) {
               main_menu.push([
@@ -80,14 +77,12 @@ export default (() => {
               },
             });
           } else {
-            process.setState('ready');
-            process.setSubState('ready');
+            process.ready();
             await bot.sendMessage(msg.chat.id, `Привет, ${msg.from.first_name}! Сначала воспользуйся командой reg, чтобы зарегистрироваться`);
           }
         } else {
           await bot.sendMessage(msg.message.chat.id, `Ошибка при проверке пользователя: ${error}`);
-          process.setState('ready');
-          process.setSubState('ready');
+          process.ready();
         }
       });
     }
@@ -176,8 +171,7 @@ export default (() => {
         });
       } else {
         await bot.sendMessage(msg.message.chat.id, `Ошибка при поиске проектов: ${error}`);
-        process.setState('ready');
-        process.setSubState('ready');
+        process.ready();
       }
     });
     btns.push([{
@@ -206,24 +200,20 @@ export default (() => {
                         .then(async ({ status, error }) => {
                           if (status) {
                             await bot.sendMessage(msg.message.chat.id, 'Пользователь успешно добавлен!');
-                            process.setState('ready');
-                            process.setSubState('ready');
+                            process.ready();
                           } else {
                             await bot.sendMessage(msg.message.chat.id, `Ошибка при добавлении проекта: ${error}`);
-                            process.setState('ready');
-                            process.setSubState('ready');
+                            process.ready();
                           }
                         });
                     } else {
                       await bot.sendMessage(msg.message.chat.id, `Ошибка при поиске ID пользователя: ${error}`);
-                      process.setState('ready');
-                      process.setSubState('ready');
+                      process.ready();
                     }
                   });
                 } else {
                   await bot.sendMessage(msg.message.chat.id, `Ошибка при добавлении пользователя: ${error}`);
-                  process.setState('ready');
-                  process.setSubState('ready');
+                  process.ready();
                 }
               });
           }
@@ -302,12 +292,10 @@ export default (() => {
           ).then(async ({ status, error }) => {
             if (status) {
               await bot.sendMessage(msg.chat.id, 'Запись лога успешно добавлена!');
-              process.setState('ready');
-              process.setSubState('ready');
+              process.ready();
             } else {
               await bot.sendMessage(msg.chat.id, `Ошибка при добавлении записи лога: ${error}`);
-              process.setState('ready');
-              process.setSubState('ready');
+              process.ready();
             }
           });
         }
@@ -350,17 +338,14 @@ export default (() => {
                 const report = new LogTimeReport(result).getFile();
                 if (report.status) {
                   await bot.sendDocument(msg.chat.id, report.file);
-                  process.setState('ready');
-                  process.setSubState('ready');
+                  process.ready();
                 } else {
                   await bot.sendMessage(msg.chat.id, `Ошибка при получении файла отчета: ${report.error}`);
-                  process.setState('ready');
-                  process.setSubState('ready');
+                  process.ready();
                 }
               } else {
                 await bot.sendMessage(msg.chat.id, `Ошибка при формировании отчета: ${error}`);
-                process.setState('ready');
-                process.setSubState('ready');
+                process.ready();
               }
             });
         }
@@ -374,22 +359,20 @@ export default (() => {
       [
         db.getSupervisorReport('users'),
         db.getSupervisorReport('projects'),
+        db.getSupervisorReport('logs'),
       ],
     ).then(async (results) => {
       if (results.find((result) => (!result.status))) {
         await bot.sendMessage(msg.message.chat.id, `Ошибка при формировании отчета: ${results.find((result) => (result.error))}`);
-        process.setState('ready');
-        process.setSubState('ready');
+        process.ready();
       } else {
         const report = new SupervisorReport(results).getFile();
         if (report.status) {
           await bot.sendDocument(msg.message.chat.id, report.file);
-          process.setState('ready');
-          process.setSubState('ready');
+          process.ready();
         } else {
           await bot.sendMessage(msg.message.chat.id, `Ошибка при получении файла отчета: ${report.error}`);
-          process.setState('ready');
-          process.setSubState('ready');
+          process.ready();
         }
       }
     });

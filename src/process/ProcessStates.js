@@ -46,4 +46,9 @@ export default class Process {
       console.error('Передано некорректное состояние подпроцесса');
     }
   }
+
+  ready() {
+    this.setState('ready');
+    this.setSubState('ready');
+  }
 }
