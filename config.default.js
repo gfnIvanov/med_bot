@@ -1,6 +1,8 @@
+import path from 'path';
+
 export const config = {
   token: '',
-  db_path: '',
+  db_path: path.resolve('./database/db.db'),
   mainMenu: [
     [
       {
@@ -18,4 +20,8 @@ export const config = {
   supervisors: [
     'gfn_ivanov',
   ],
+  reports_path: {
+    log_report: path.resolve('./src/reports/report_files/log_reports'),
+    super_report: path.resolve('./src/reports/report_files/super_reports'),
+  },
 };
