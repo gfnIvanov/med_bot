@@ -71,14 +71,29 @@ export default (() => {
                 },
               ]);
             }
-            await bot.sendMessage(msg.chat.id, 'Основное меню', {
-              reply_markup: {
-                inline_keyboard: main_menu,
-              },
+            db.checkExistsUserProjects(msg.from.username, 'OTTA').then(async ({ status, result, error }) => {
+              if (status) {
+                if (result.queryResult > 0) {
+                  main_menu.push([
+                    {
+                      text: 'Учетные записи НИИ Отта',
+                      callback_data: 'otta_vpn',
+                    },
+                  ]);
+                }
+                await bot.sendMessage(msg.chat.id, 'Основное меню', {
+                  reply_markup: {
+                    inline_keyboard: main_menu,
+                  },
+                });
+              } else {
+                await bot.sendMessage(msg.message.chat.id, `Ошибка при проверке проектов пользователя: ${error}`);
+                process.ready();
+              }
             });
           } else {
-            process.ready();
             await bot.sendMessage(msg.chat.id, `Привет, ${msg.from.first_name}! Сначала воспользуйся командой reg, чтобы зарегистрироваться`);
+            process.ready();
           }
         } else {
           await bot.sendMessage(msg.message.chat.id, `Ошибка при проверке пользователя: ${error}`);

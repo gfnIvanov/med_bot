@@ -2,3 +2,5 @@ node_modules/
 config.js
 /database/db.db
 .eslintrc.cjs
+/src/reports/report_files/log_reports/
+/src/reports/report_files/super_reports/
