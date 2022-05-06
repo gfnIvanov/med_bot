@@ -1,4 +1,6 @@
+import path from 'path';
 import Reports from './Reports.js';
+import { config } from '../../config.js';
 
 export default class SupervisorReport extends Reports {
   constructor(superReportData) {
@@ -13,10 +15,10 @@ export default class SupervisorReport extends Reports {
         const sheet = this.xlsx.utils.json_to_sheet(data.result);
         this.xlsx.utils.book_append_sheet(this.book, sheet, data.list);
       });
-      this.xlsx.writeFile(this.book, `src\\reports\\report_files\\super_reports\\${now}_result.xlsx`);
+      this.xlsx.writeFile(this.book, path.join(config.reports_path.super_report, `${now}_result.xlsx`));
       return {
         status: true,
-        file: `src\\reports\\report_files\\super_reports\\${now}_result.xlsx`,
+        file: path.join(config.reports_path.super_report, `${now}_result.xlsx`),
         error: null,
       };
     } catch (e) {

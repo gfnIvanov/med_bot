@@ -1,4 +1,6 @@
+import path from 'path';
 import Reports from './Reports.js';
+import { config } from '../../config.js';
 
 export default class LogTimeReport extends Reports {
   constructor(logReportData) {
@@ -11,10 +13,10 @@ export default class LogTimeReport extends Reports {
       const now = this.moment().format('DD-MM-YYYY-hh-mm-ss');
       const sheet = this.xlsx.utils.json_to_sheet(this.data);
       this.xlsx.utils.book_append_sheet(this.book, sheet, 'Результаты');
-      this.xlsx.writeFile(this.book, `src\\reports\\report_files\\log_reports\\${now}_result.xlsx`);
+      this.xlsx.writeFile(this.book, path.join(config.reports_path.log_report, `${now}_result.xlsx`));
       return {
         status: true,
-        file: `src\\reports\\report_files\\log_reports\\${now}_result.xlsx`,
+        file: path.join(config.reports_path.log_report, `${now}_result.xlsx`),
         error: null,
       };
     } catch (e) {
