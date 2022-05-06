@@ -47,6 +47,36 @@ export default class DB {
     });
   }
 
+  checkExistsUserProjects(userName, projectCode) {
+    return new Promise((res) => {
+      this.db.get(`select count(*) queryResult
+                     from D_USERS u
+                    where u.USER_ID = $user_name
+                      and exists (select 1
+                                    from D_USER_PROJECTS up
+                                         join D_PROJECTS p
+                                   where p.PROJECT_CODE = $project_code
+                                     and up.USER = u.ID)`, {
+        $user_name: userName,
+        $project_code: projectCode,
+      }, (err, result) => {
+        if (err) {
+          res({
+            status: false,
+            result: null,
+            error: err.message,
+          });
+        } else {
+          res({
+            status: true,
+            result,
+            error: null,
+          });
+        }
+      });
+    });
+  }
+
   addUser(ident, userName, login) {
     return new Promise((res) => {
       this.db.run(`insert into D_USERS (USER_ID, USER_NAME, USER_LOGIN)
