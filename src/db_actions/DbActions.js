@@ -242,10 +242,16 @@ export default class DB {
     if (data === 'users') {
       return new Promise((res) => {
         this.db.all(
-          `select USER_ID,
-                  USER_NAME,
-                  USER_LOGIN
-             from D_USERS`,
+          `select u.USER_ID,
+                  u.USER_NAME,
+                  u.USER_LOGIN,
+                  group_concat(p.PROJECT_NAME, '; ') AVAILABLE_PROJECTS
+             from D_USERS u
+                  join D_USER_PROJECTS up on up.USER = u.ID
+                  join D_PROJECTS p on up.PROJECT = p.ID
+            group by u.USER_ID,
+                     u.USER_NAME,
+                     u.USER_LOGIN`,
           (err, result) => {
             if (err) {
               res({
