@@ -153,14 +153,14 @@ export default class DB {
   addUserLog(ident, clientName, taskText, taskResult, taskTime) {
     return new Promise((res) => {
       this.db.run(`insert into D_USER_LOGS (USER, CLIENT, TASK_TEXT, TASK_DATE, RESULT, LOG_TIME)
-                          select u.ID,
-                                 $clientName,
-                                 $taskText,
-                                 date(),
-                                 $taskResult,
-                                 $taskTime
-                         from D_USERS u
-                        where u.USER_ID = $ident`, {
+                        select u.ID,
+                               $clientName,
+                               $taskText,
+                               date(),
+                               $taskResult,
+                               $taskTime
+                          from D_USERS u
+                         where u.USER_ID = $ident`, {
         $ident: ident,
         $clientName: clientName,
         $taskText: taskText,
@@ -350,7 +350,7 @@ export default class DB {
                       and ul1.USER = ul.USER) DECEMBER
              from D_USER_LOGS ul
                   join D_USERS u on ul.USER = u.ID
-            where strftime('%Y', ul.TASK_DATE) = strftime('%Y', 'now')
+            where strftime('%Y', ul.TASK_DATE) = strftime('%Y', 'now', 'localtime')
             group by ul.USER`,
           (err, result) => {
             if (err) {
@@ -371,6 +371,142 @@ export default class DB {
           },
         );
       });
+    } if (data === 'vpn_accounts_log') {
+      return new Promise((res) => {
+        this.db.all(
+          `select u.USER_NAME,
+                  ova.ACCOUNT,
+                  ova.DATE_BEGIN,
+                  ova.DATE_END
+             from D_OTTA_VPN_ACCOUNTS ova
+                  join D_USERS u on ova.USER = u.ID`,
+          (err, result) => {
+            if (err) {
+              res({
+                status: false,
+                result: null,
+                list: null,
+                error: err.message,
+              });
+            } else {
+              res({
+                status: true,
+                result,
+                list: 'Учетные записи НИИ Отта',
+                error: null,
+              });
+            }
+          },
+        );
+      });
     }
+  }
+
+  checkFreeOttaVpn() {
+    return new Promise((res) => {
+      this.db.all(
+        `select ova.ACCOUNT
+           from D_OTTA_VPN_ACCOUNTS ova
+                join D_USERS u on ova.USER = u.ID
+          where strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime') > ova.DATE_BEGIN
+            and ova.DATE_END is null`,
+        (err, result) => {
+          if (err) {
+            res({
+              status: false,
+              result: null,
+              error: err.message,
+            });
+          } else {
+            res({
+              status: true,
+              result,
+              error: null,
+            });
+          }
+        },
+      );
+    });
+  }
+
+  checkUserOttaVpn(user) {
+    return new Promise((res) => {
+      this.db.get(
+        `select ova.ID,
+                ova.ACCOUNT
+           from D_OTTA_VPN_ACCOUNTS ova
+                join D_USERS u on ova.USER = u.ID
+          where strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime') > ova.DATE_BEGIN
+            and ova.DATE_END is null
+            and u.USER_ID = $user`,
+        {
+          $user: user,
+        },
+        (err, result) => {
+          if (err) {
+            res({
+              status: false,
+              result: null,
+              error: err.message,
+            });
+          } else {
+            res({
+              status: true,
+              result,
+              error: null,
+            });
+          }
+        },
+      );
+    });
+  }
+
+  takeVpnAccount(user, account) {
+    return new Promise((res) => {
+      this.db.run(`insert into D_OTTA_VPN_ACCOUNTS (USER, ACCOUNT, DATE_BEGIN, DATE_END)
+                        select u.ID,
+                               $account,
+                               strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime'),
+                               null
+                          from D_USERS u
+                         where u.USER_ID = $user`, {
+        $user: user,
+        $account: account,
+      }, (err) => {
+        if (err) {
+          res({
+            status: false,
+            error: err.message,
+          });
+        } else {
+          res({
+            status: true,
+            error: null,
+          });
+        }
+      });
+    });
+  }
+
+  releaseVpnAccount(ident) {
+    return new Promise((res) => {
+      this.db.run(`update D_OTTA_VPN_ACCOUNTS
+                      set DATE_END = strftime('%Y-%m-%d %H:%M:%S', 'now', 'localtime')
+                    where ID = $ident`, {
+        $ident: ident,
+      }, (err) => {
+        if (err) {
+          res({
+            status: false,
+            error: err.message,
+          });
+        } else {
+          res({
+            status: true,
+            error: null,
+          });
+        }
+      });
+    });
   }
 }

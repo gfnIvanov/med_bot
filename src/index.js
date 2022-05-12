@@ -77,7 +77,7 @@ export default (() => {
                   main_menu.push([
                     {
                       text: 'Учетные записи НИИ Отта',
-                      callback_data: 'otta_vpn',
+                      callback_data: 'otta_vpn_accounts',
                     },
                   ]);
                 }
@@ -133,6 +133,48 @@ export default (() => {
     if (msg.data === 'super_reports') {
       if (process.state === 'ready' && process.sub_state === 'ready') {
         getSupervisorReport(msg);
+        bot.answerCallbackQuery(msg.id);
+      }
+    }
+    if (msg.data === 'otta_vpn_accounts') {
+      if (process.state === 'ready' && process.sub_state === 'ready') {
+        process.setState('vpnActions');
+        await bot.sendMessage(msg.message.chat.id, 'Шо сделать?', {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Занять',
+                  callback_data: 'take_account',
+                },
+              ],
+              [
+                {
+                  text: 'Освободить',
+                  callback_data: 'release_account',
+                },
+              ],
+            ],
+          },
+        });
+        bot.answerCallbackQuery(msg.id);
+      }
+    }
+    if (msg.data === 'take_account') {
+      if (process.state === 'vpnActions' && process.sub_state === 'ready') {
+        workWithOttaVpn(msg);
+        bot.answerCallbackQuery(msg.id);
+      }
+    }
+    if (msg.data === 'release_account') {
+      if (process.state === 'vpnActions' && process.sub_state === 'ready') {
+        releaseVpnAccount(msg, msg.from.username);
+        bot.answerCallbackQuery(msg.id);
+      }
+    }
+    if (/bars_vpn+/.exec(msg.data)) {
+      if (process.state === 'vpnActions' && process.sub_state === 'awaitTakeVpn') {
+        takeVpnAccount(msg, msg.from.username, msg.data);
         bot.answerCallbackQuery(msg.id);
       }
     }
@@ -375,6 +417,7 @@ export default (() => {
         db.getSupervisorReport('users'),
         db.getSupervisorReport('projects'),
         db.getSupervisorReport('logs'),
+        db.getSupervisorReport('vpn_accounts_log'),
       ],
     ).then(async (results) => {
       if (results.find((result) => (!result.status))) {
@@ -389,6 +432,90 @@ export default (() => {
           await bot.sendMessage(msg.message.chat.id, `Ошибка при получении файла отчета: ${report.error}`);
           process.ready();
         }
+      }
+    });
+  };
+
+  // --------------------------- Работа с учетными записями НИИ Отта ---------------------------
+  const workWithOttaVpn = async (msg) => {
+    process.setSubState('awaitTakeVpn');
+    db.checkFreeOttaVpn().then(async ({ status, result, error }) => {
+      if (status) {
+        if (result.length === 0) {
+          await bot.sendMessage(msg.message.chat.id, 'Свободны все учетные записи, выбирай любую', {
+            reply_markup: {
+              inline_keyboard: config.otta_vpn_accounts,
+            },
+          });
+        } else if (result.length === config.otta_vpn_accounts.length) {
+          await bot.sendMessage(msg.message.chat.id, 'Все учетные записи заняты :(');
+        } else {
+          const accounts = result.map((res) => res.ACCOUNT);
+          const btns = [];
+          accounts.forEach((account) => {
+            config.otta_vpn_accounts.forEach((vpn) => {
+              if (vpn[0].text !== account) {
+                btns.push(vpn);
+              }
+            });
+          });
+          await bot.sendMessage(msg.message.chat.id, 'Свободны следующие учетные записи:', {
+            reply_markup: {
+              inline_keyboard: btns,
+            },
+          });
+        }
+      } else {
+        await bot.sendMessage(msg.message.chat.id, `Ошибка при проверке свободных учетных записей: ${error}`);
+        process.ready();
+      }
+    });
+  };
+
+  const takeVpnAccount = async (msg, user, account) => {
+    db.checkUserOttaVpn(user).then(async ({ status, result, error }) => {
+      if (status) {
+        if (result) {
+          await bot.sendMessage(msg.message.chat.id, `Ты уже занял учетную запись ${result.ACCOUNT}, одна запись в одни руки!`);
+          process.ready();
+        } else {
+          db.takeVpnAccount(user, account).then(async ({ status, error }) => {
+            if (status) {
+              await bot.sendMessage(msg.message.chat.id, 'Учетная запись успешно занята, пользуйся с удовольствием');
+              process.ready();
+            } else {
+              await bot.sendMessage(msg.message.chat.id, `Ошибка при попытке занять учетную запись: ${error}`);
+              process.ready();
+            }
+          });
+        }
+      } else {
+        await bot.sendMessage(msg.message.chat.id, `Ошибка при проверке учетной записи, занятой пользователем: ${error}`);
+        process.ready();
+      }
+    });
+  };
+
+  const releaseVpnAccount = async (msg, user) => {
+    db.checkUserOttaVpn(user).then(async ({ status, result, error }) => {
+      if (status) {
+        if (!result) {
+          await bot.sendMessage(msg.message.chat.id, 'У тебя нет активных учетных записей');
+          process.ready();
+        } else {
+          db.releaseVpnAccount(result.ID).then(async ({ status, error }) => {
+            if (status) {
+              await bot.sendMessage(msg.message.chat.id, `Ты успешно освободил учетную запись ${result.ACCOUNT}`);
+              process.ready();
+            } else {
+              await bot.sendMessage(msg.message.chat.id, `Ошибка при попытке освободить учетную запись: ${error}`);
+              process.ready();
+            }
+          });
+        }
+      } else {
+        await bot.sendMessage(msg.message.chat.id, `Ошибка при проверке учетной записи, занятой пользователем: ${error}`);
+        process.ready();
       }
     });
   };

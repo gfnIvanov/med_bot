@@ -5,6 +5,7 @@ export default class Process {
       'registration',
       'logTime',
       'logReport',
+      'vpnActions',
       'errorDBconnect',
     ];
     this._sub_states = [
@@ -17,6 +18,7 @@ export default class Process {
       'awaitTaskResult',
       'awaitTaskTime',
       'awaitLogReportDateIn',
+      'awaitTakeVpn',
       'awaitLogReportDateOut',
     ];
   }
